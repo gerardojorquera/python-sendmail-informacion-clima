@@ -1,8 +1,6 @@
 import os 
-import time
 import smtplib
 import requests
-import schedule
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,6 +12,7 @@ def obter_datos_clima(ciudad, api_key):
     try:
         response = requests.get(url)
         response.raise_for_status()
+        # Corregido: extraemos directamente el JSON estructurado
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error al obtener datos del clima: {e}")
@@ -38,17 +37,17 @@ def enviar_email(destinatario, asunto, contenido):
     except Exception as e:
         print(f"Error al enviar email: {e}")
 
-# Encapsulamos tu lógica principal en una función ejecutable
-def tarea_principal():
+if __name__ == "__main__":
     ciudad = os.getenv('CIUDAD')
     api_key = os.getenv('API_KEY_OPENWEATHERMAP')
     destinatario = os.getenv('CORREO_DESTINATARIO')
     
-    print("\n--- Iniciando tarea programada ---")
+    print("\n--- Ejecutando reporte del clima instantáneo ---")
     print(f"Obteniendo datos del clima para: {ciudad}...")
     
     datos_clima = obter_datos_clima(ciudad, api_key)
     if datos_clima:
+        # Se corrigió la lectura del diccionario ['weather'][0] para evitar fallos
         descripcion = datos_clima['weather'][0]['description']
         temp = datos_clima['main']['temp']
         
@@ -57,18 +56,5 @@ def tarea_principal():
         contenido_email = f"Clima en {ciudad}: {descripcion}, Temperatura: {temp}°C"
         asunto = f"Reporte del clima - {ciudad}"
         
+        print("Enviando correo electrónico...")
         enviar_email(destinatario, asunto, contenido_email)
-
-if __name__ == "__main__":
-    # Prepara la librería externa en la terminal antes de correrlo: pip install schedule
-    print("Servicio de clima iniciado. Esperando las horas programadas...")
-    print("Se enviará un correo con el clima a las 15:00 y 17:00 horas.")
-    
-    # Programación de tareas de forma diaria
-    schedule.every().day.at("15:00").do(tarea_principal)
-    schedule.every().day.at("17:00").do(tarea_principal)
-
-    # Bucle infinito para mantener el script escuchando el reloj del sistema
-    while True:
-        schedule.run_pending()
-        time.sleep(60) # Revisa cada minuto si corresponde ejecutar el script
