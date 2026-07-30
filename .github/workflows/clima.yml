@@ -2,10 +2,8 @@ name: Reporte de Clima Programado
 
 on:
   schedule:
-    # Las horas en GitHub Actions se calculan ESTRICTAMENTE en horario UTC.
-    # Si estás en Chile (UTC-4), las 15:00 son las 19:00 UTC, y las 17:00 son las 21:00 UTC.
-    # Modifica los números '19,21' según la diferencia horaria de tu país respecto a UTC.
-    - cron: '0 19,21 * * *'
+    # 19 corresponde a las 15:00 de Chile y 23 corresponde a las 19:00 de Chile (UTC-4)
+    - cron: '0 19,23 * * *'
   workflow_dispatch: # Esto te permite ejecutar el script manualmente desde la web de GitHub para probar si funciona
 
 jobs:
